@@ -35,6 +35,13 @@ class ActionPayload(BaseModel):
     remark: str | None = None
 
 
+class BatchActionPayload(BaseModel):
+    """调度批次动作：只接受生命周期里声明过的相邻状态推进。"""
+
+    action: str
+    remark: str | None = None
+
+
 
 class TargetsiteEntry(BaseModel):
     """目标站点明细结构。"""

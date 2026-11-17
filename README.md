@@ -68,6 +68,47 @@ npm run dev
 | 模板市场 | `template` | 采集模板 | 模板编号、模板名称、适用站点 |
 | 采集流程 | `flowline` | 流程编排 | 流程编号、流程名称、步骤序列 |
 
+## 调度批次清单与待下发任务清单
+
+定时调度按「调度计划 + 执行窗口」展开出调度批次清单，爬虫引擎再消费批次生成待下发
+任务清单。两份清单是派生台账，放在 `backend/app/store.py` 的 ledger 里，不计入模块统计。
+
+| 台账 | 生产方 | 消费方 | 关键字段 |
+| --- | --- | --- | --- |
+| 调度批次清单 | 定时调度 | 爬虫引擎 | 批次编号、执行窗口、触发来源、状态、校验结论 |
+| 待下发任务清单 | 爬虫引擎 | 下发执行 | 任务清单编号、批次编号、下发时间、状态 |
+
+业务规则（实现在 `backend/app/services/batches.py`、`dispatches.py`、`windows.py`）：
+
+- 窗口边界由 `windows.parse_window` 统一判定；缺少窗口或边界不清晰的计划**不会**产生
+  「待执行」批次，Cron 无法解析时同样直接拒绝。
+- 同一计划在同一执行窗口只保留一个批次：手动触发命中已存在的窗口时把来源并入
+  `合并触发来源`，调用方拿到的仍是同一个批次。
+- 状态只能 待执行 → 执行中 → 已完成 / 失败 依次推进；重试只能 失败 → 执行中，
+  已完成批次不能回退。
+- 批次与任务清单在同一事务里写入（`store.transaction()`），落库失败整体回退，
+  任务清单不会读到半份批次；重复送交只读取已存在结果，不重复写入。
+- 下发时间必须落在批次窗口内，窗口未到或已过都会被拒绝。
+- 批次校验结论同步到任务清单，两份台账的结论保持一致。
+
+接口：
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/schedule/plans` | 批次面板的计划下拉 |
+| GET/POST | `/api/schedule/batches?plan_id=` | 查询 / 生成调度批次清单 |
+| GET | `/api/schedule/batches/export` | 导出批次清单 CSV |
+| GET | `/api/schedule/batches/{id}` | 单条批次明细 |
+| POST | `/api/schedule/batches/{id}/actions` | 开始执行 / 标记完成 / 标记失败 / 重试执行 |
+| POST | `/api/schedule/batches/sync` | 按当前时间推进批次状态 |
+| GET | `/api/schedule/{plan_id}/batches` | 按计划查看批次序列、窗口与合并情况 |
+| GET/POST | `/api/crawler/dispatches` | 查询 / 生成待下发任务清单 |
+| GET | `/api/crawler/dispatches/export` | 导出任务清单 CSV |
+| POST | `/api/crawler/dispatches/sync` | 同步批次校验结论 |
+| POST | `/api/crawler/dispatches/{id}/actions` | 下发任务（动作名：`下发任务`） |
+
+原有的时间线、导出、登记与动作接口返回结构保持不变。
+
 ## 约定
 
 - 每个模块的前端页面在 `frontend/src/views/<模块>/index.vue`，后端接口在

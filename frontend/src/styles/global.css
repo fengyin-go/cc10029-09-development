@@ -70,3 +70,22 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .analysis-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 12px 0; }
 .analysis-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--brand); min-width: 24px; position: relative; transition: height 0.4s; }
 .analysis-bar span { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--muted); white-space: nowrap; }
+/* 调度批次 / 待下发任务面板 */
+.batch-panel { margin-top: 16px; padding: 14px; background: #fff; border: 1px solid var(--border); border-radius: 8px; }
+.batch-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.batch-head h3 { margin: 0; font-size: 15px; }
+.batch-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 12px 0; }
+.batch-picker { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+.batch-picker select, .batch-picker input { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; min-width: 160px; }
+.batch-table td { vertical-align: top; }
+.batch-conclusion { max-width: 260px; color: var(--muted); }
+.merge-tag { margin-left: 6px; padding: 1px 6px; border-radius: 10px; background: #e0edff; color: #1f6feb; font-size: 11px; }
+.status-chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; background: #eef2f7; color: #334155; }
+.status-chip[data-status="待执行"] { background: #e2e8f0; color: #334155; }
+.status-chip[data-status="执行中"] { background: #dbeafe; color: #1d4ed8; }
+.status-chip[data-status="已完成"] { background: #dcfce7; color: #15803d; }
+.status-chip[data-status="失败"] { background: #fee2e2; color: #b42318; }
+.timeline-bar.status-待执行 { background: #94a3b8; }
+.timeline-bar.status-执行中 { background: #3b82f6; }
+.timeline-bar.status-已完成 { background: #22c55e; }
+.timeline-bar.status-失败 { background: #ef4444; }

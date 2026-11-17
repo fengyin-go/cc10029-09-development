@@ -34,6 +34,10 @@ class ScheduleService:
     def get_entry(self, entry_id: int) -> dict[str, Any] | None:
         return store.find(MODULE, entry_id)
 
+    def list_rows(self) -> list[dict[str, Any]]:
+        """给批次面板用的计划原始行，按编号稳定排序。"""
+        return sorted(store.rows(MODULE), key=lambda row: int(row.get("id", 0)))
+
     def create_entry(self, values: dict[str, Any]) -> tuple[dict[str, Any] | None, list[str]]:
         missing = [f for f in REQUIRED_FIELDS if not str(values.get(f) or "").strip()]
         if missing:
